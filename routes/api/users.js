@@ -6,6 +6,8 @@ const bcrypt = require('bcryptjs');
 const jwt =require ('jsonwebtoken');
 const keys = require('../../keys');
 const passport = require('passport');
+const validateRegisterInput = require('../../validation/register');
+const validateLoginInput = require('../../validation/login');
 
 router.get('/test', (req, res) => res.json({msg:
     'Users works'}));
@@ -14,6 +16,13 @@ router.get('/test', (req, res) => res.json({msg:
 // @desc Register user
 // @access Public
 router.post('/register', (req, res) => {
+    const {errors, isValid} = validateRegisterInput(req.body);
+ 
+    //Check for validation
+    if (!isValid){
+        return res.status(400).json(errors);
+    }
+
     User.findOne({email: req.body.email})
      .then(user => {
         if (user){
@@ -50,6 +59,13 @@ router.post('/register', (req, res) => {
 // @desc Login user / return a JWT token
 // @access Public
 router.post('/login', (req, res) => {
+     const {errors, isValid} = validateLoginInput(req.body);
+ 
+    //Check for validation
+    if (!isValid){
+        return res.status(400).json(errors);
+    }
+  
     const email = req.body. email;
     const password = req.body.password;
 
