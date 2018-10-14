@@ -2,10 +2,15 @@ const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
 const passport = require('passport');
+
 //Load profile model
 const Profile = require('../../models/Profile');
 //Load user model
 const User = require('../../models/User');
+//Load Validation
+const validateProfileInput = require('../../validation/profile');
+const validateExperienceInput = require('../../validation/experience');
+const validateEducationInput = require('../../validation/education');
 
 //@route GET api/profile
 //@description Get current user profile
@@ -84,5 +89,62 @@ router.post('/', passport.authenticate('jwt', {session: false}),
    
    }
 )
+
+//@route GET api/profile/all
+//@description Get all profiles
+//@access Public
+router.get('/all', (req, res) => {
+    const errors ={};
+
+    Profile.find()
+        .populate('user', ['name', 'avatar'])
+        .then(profiles => {
+            if(!profiles) {
+                errors.noprofile = 'There are no profiles';
+                return res.status(404).json(errors);
+            }
+
+           return res.json(profiles);
+        })
+        .catch(err => res.status(404).json({profile: 'There are no profiles'}));
+})
+
+//@route GET api/profile/handle/:handle
+//@description Get profile by handle
+//@access Public
+router.get('/handle/:handle', (req, res) => {
+    const errors ={};
+
+    Profile.findOne({handle: req.params.handle})
+        .populate('user', ['name', 'avatar'])
+        .then(profile => {
+            if(!profile) {
+                errors.noprofile = 'There are no profiles';
+                return res.status(404).json(errors);
+            }
+
+           return res.json(profile);
+        })
+        .catch(err => res.status(404).json(err));
+})
+//@route    GET api/profile/user/:user_id
+//@description Get profile by user id
+//@access Public
+router.get('/user/:user_id', (req, res) => {
+    const errors ={};
+
+    Profile.findOne({user: req.params.user_id})
+        .populate('user', ['name', 'avatar'])
+        .then(profile => {
+            if(!profile) {
+                errors.noprofile = 'There are no profiles';
+                return res.status(404).json(errors);
+            }
+
+           return res.json(profile);
+        })
+        .catch(err => res.status(404).json(err));
+})
+
 
 module.exports = router;
